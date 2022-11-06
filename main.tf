@@ -1,6 +1,6 @@
 provider "aws" {
   profile = "bkash"
-  region  = "ap-southeast-1"
+  region  = var.region
 }
 module "my_vpc" {
   source = "./modules/vpc"

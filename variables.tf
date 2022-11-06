@@ -56,3 +56,8 @@ variable "github_access" {
   default = "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"
 
 }
+
+variable "sns_mail" {
+  type        = string
+  description = "Enter your email address to get notified on EC2 scale-in/scale-out"
+}

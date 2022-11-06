@@ -248,3 +248,82 @@ resource "aws_autoscaling_group" "bar" {
     propagate_at_launch = true
   }
 }
+
+//// create a sns topic with subscription to user-provided email address
+resource "aws_sns_topic" "high_cpu_add_server" {
+  name         = "high_cpu_add_server"
+  display_name = "CPU_utilization_more_than_30%_adding_one_server"
+}
+resource "aws_sns_topic" "low_cpu_remove_server" {
+  name         = "low_cpu_remove_server"
+  display_name = "CPU_utilization_less_than_5%_removing_one_server"
+}
+
+resource "aws_sns_topic_subscription" "low_CPU_remove_Server" {
+  topic_arn                       = aws_sns_topic.low_cpu_remove_server.arn
+  protocol                        = "email"
+  endpoint                        = var.sns_mail
+  confirmation_timeout_in_minutes = 15
+}
+resource "aws_sns_topic_subscription" "high_CPU_add_Server" {
+  topic_arn                       = aws_sns_topic.high_cpu_add_server.arn
+  protocol                        = "email"
+  endpoint                        = var.sns_mail
+  confirmation_timeout_in_minutes = 15
+
+}
+
+/// adding simple scaling policy to ASG on scale-OUT
+resource "aws_autoscaling_policy" "scale_out_policy" {
+  name                   = "example-cpu-policy"
+  autoscaling_group_name = aws_autoscaling_group.bar.name
+  adjustment_type        = "ChangeInCapacity"
+  scaling_adjustment     = "1"
+  cooldown               = "300"
+  policy_type            = "SimpleScaling"
+}
+/// adding simple scaling policy to ASG on scale-IN
+resource "aws_autoscaling_policy" "scale_in_policy" {
+  name                   = "example-cpu-policy-scaledown"
+  autoscaling_group_name = aws_autoscaling_group.bar.name
+  adjustment_type        = "ChangeInCapacity"
+  scaling_adjustment     = "-1"
+  cooldown               = "300"
+  policy_type            = "SimpleScaling"
+}
+
+// create clouwdwatch alarm , it triggers scale-OUT scaling policy & send sns mail
+resource "aws_cloudwatch_metric_alarm" "alarm_high_CPU" {
+  alarm_name          = "alarm-high-cpu"
+  alarm_description   = "alarm-high-cpu"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = "2"
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  period              = "120"
+  statistic           = "Average"
+  threshold           = "30"
+  dimensions = {
+    "AutoScalingGroupName" = aws_autoscaling_group.bar.name
+  }
+  actions_enabled = true
+  alarm_actions   = [aws_autoscaling_policy.scale_out_policy.arn, aws_sns_topic.high_cpu_add_server.arn]
+}
+
+//create clouwdwatch alarm , it triggers scale-IN scaling policy & send sns mail
+resource "aws_cloudwatch_metric_alarm" "alarm_low_CPU" {
+  alarm_name          = "alarm-low-cpu"
+  alarm_description   = "alarm-low-cpu"
+  comparison_operator = "LessThanOrEqualToThreshold"
+  evaluation_periods  = "2"
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  period              = "120"
+  statistic           = "Average"
+  threshold           = "5"
+  dimensions = {
+    "AutoScalingGroupName" = aws_autoscaling_group.bar.name
+  }
+  actions_enabled = true
+  alarm_actions   = [aws_autoscaling_policy.scale_in_policy.arn, aws_sns_topic.low_cpu_remove_server.arn]
+}

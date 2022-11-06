@@ -61,3 +61,8 @@ variable "sns_mail" {
   type        = string
   description = "Enter your email address to get notified on EC2 scale-in/scale-out"
 }
+
+variable "region" {
+  type    = string
+  default = "ap-southeast-1"
+}

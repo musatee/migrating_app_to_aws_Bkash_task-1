@@ -44,7 +44,7 @@ variable "domain" {
 }
 variable "acm_arn" {
   type    = string
-  default = "arn:aws:acm:ap-southeast-1:115391213665:certificate/819077df-fa8e-4416-907c-76758f19c8fd"
+  default = "arn:aws:acm:ap-southeast-1:115391213665:certificate/be0c8ff8-c5cd-43b5-8c13-c8f5563c69c4"
 }
 
 variable "db_user" {

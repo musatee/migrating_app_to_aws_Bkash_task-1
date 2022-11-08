@@ -3,7 +3,7 @@ People are becoming interested day by day to cloud platform & planning to run th
 
 ## What it does?
 It's written for migrating a laravel based project to aws cloud. So the server related configs are based on laravel platform. To do so all you need to do is to run ***terraform init*** and ***terraform apply*** in the terraform root directory. then it performs the following:
-- It prompts db name, db user, db password & email address for sns notification on server scale-IN/OUT
+- It prompts db name, db user, db password, github access token for codebase & email address for sns notification on server scale-IN/OUT
 - It clones code base from private git repo
 - Deploys laravel application on ec2 
 - All application servers will be launched under private subnet & be controlled by auto-scaling group

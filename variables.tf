@@ -52,9 +52,9 @@ variable "db_user" {
   description = "db username"
 }
 variable "github_access" {
-  type    = string
-  default = "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"
-
+  type        = string
+  description = "Enter the github access_token for your codebase"
+  sensitive   = true
 }
 
 variable "sns_mail" {
